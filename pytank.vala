@@ -284,27 +284,6 @@ class Vala.Compiler {
 		}
 		
 		if (library != null) {
-			var interface_writer = new CodeWriter ();
-			string vapi_filename = "%s.vapi".printf (library);
-
-			// put .vapi file in current directory unless -d has been explicitly specified
-			if (directory != null && !Path.is_absolute (vapi_filename)) {
-				vapi_filename = "%s%c%s".printf (context.directory, Path.DIR_SEPARATOR, vapi_filename);
-			}
-
-			interface_writer.write_file (context, vapi_filename);
-
-
-			var gir_writer = new GIRWriter ();
-			string gir_filename = "%s.gir".printf (library);
-
-			// put .gir file in current directory unless -d has been explicitly specified
-			if (directory != null && !Path.is_absolute (gir_filename)) {
-				gir_filename = "%s%c%s".printf (context.directory, Path.DIR_SEPARATOR, gir_filename);
-			}
-
-			gir_writer.write_file (context, gir_filename);
-
 			var tank_writer = new TankWriter ();
 			string tank_filename = "%s.tank".printf (library);
 			tank_writer.write_file (context, tank_filename);
