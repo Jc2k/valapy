@@ -22,6 +22,7 @@
  */
 
 using GLib;
+using Gee;
 
 class Vala.Compiler {
 	static string basedir;
@@ -57,6 +58,8 @@ class Vala.Compiler {
 	static string dump_tree;
 	static bool save_temps;
 	static bool quiet_mode;
+
+	private Gee.List<SourceFile> source_files = new ArrayList<SourceFile> ();
 
 	private CodeContext context;
 
@@ -215,8 +218,11 @@ class Vala.Compiler {
 					source_file.add_using_directive (new UsingDirective (new UnresolvedSymbol (null, "GLib", null)));
 
 					context.add_source_file (source_file);
+					source_files.add (source_file);
 				} else if (source.has_suffix (".vapi")) {
-					context.add_source_file (new SourceFile (context, rpath, true));
+					var x = new SourceFile (context, rpath, true);
+					context.add_source_file (x);
+					source_files.add (x);
 				} else if (source.has_suffix (".c")) {
 					context.add_c_source_file (rpath);
 				} else {
@@ -286,7 +292,7 @@ class Vala.Compiler {
 		if (library != null) {
 			var tank_writer = new TankWriter ();
 			string tank_filename = "%s.tank".printf (library);
-			tank_writer.write_file (context, tank_filename);
+			tank_writer.write_file (context, source_files, tank_filename);
 
 			library = null;
 		}

@@ -5,6 +5,8 @@ using Vala;
 public class TankWriter : CodeVisitor {
 
 	private CodeContext context;
+	private Gee.List<SourceFile> source_files;
+
 	private FileStream cstream;
 	private FileStream stream;
 
@@ -12,14 +14,30 @@ public class TankWriter : CodeVisitor {
 
 	private bool class_has_members;
 
-
-	public void write_file(CodeContext context, string filename) {
+	public void write_file(CodeContext context, Gee.List<SourceFile> source_files, string filename) {
 		this.context = context;
+		this.source_files = source_files;
+
 		this.stream = FileStream.open(filename, "w");
+		this.cstream = FileStream.open(filename+".c", "w");
 
 		this.indent = 0;
 
+		stream.printf("from ctypes import *\n\n");
+		stream.printf("lib = CDLL('libsyncml.so')\n\n");
+
 		context.accept(this);
+	}
+
+	private bool interesting(CodeNode node) {
+		if (node.source_reference == null)
+			return true;
+
+		foreach (var sr in source_files)
+			if (node.source_reference.file == sr)
+				return true;
+
+		return false;
 	}
 
 	private void write_indent() {
@@ -28,30 +46,49 @@ public class TankWriter : CodeVisitor {
 	}
 
 	public override void visit_namespace (Namespace ns) {
+		if (!interesting(ns))
+			return;
+
 		ns.accept_children(this);
 	}
 
 	public override void visit_enum (Enum en) {
 		en.accept_children(this);
-		stream.printf("\n");
+		cstream.printf("\n");
 	}
 
 	public override void visit_enum_value(Vala.EnumValue ev) {
-		stream.printf("%s\n", ev.get_cname());
+		cstream.printf("%s\n", ev.get_cname());
 	}
 
 	public override void visit_constant(Constant co) {
-		stream.printf("%s\n", co.get_cname());
+		cstream.printf("%s\n", co.get_cname());
 	}
 
 	public override void visit_class(Class cl) {
-		// cstream.printf("%s\n", cl.get_cname());
+		if (!interesting(cl))
+			return;
+
+		cstream.printf("%s\n", cl.get_cname());
 
 		this.write_indent();
 
-		stream.printf("class %s:\n", cl.name);
+		stream.printf("class %s", cl.name);
+		// FIXME: Inheritance here, k thx.
+		stream.printf(":\n\n");
 
-		this.indent++;
+                this.indent++;
+
+                this.write_indent();
+                stream.printf("def __init__(self, ptr):\n");
+
+                this.indent++;
+
+                this.write_indent();
+                stream.printf("self.__ptr__ = ptr\n\n");
+
+                this.indent--;
+
 		this.class_has_members = false;
 
 		cl.accept_children(this);
