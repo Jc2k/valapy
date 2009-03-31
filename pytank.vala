@@ -39,7 +39,6 @@ class Vala.Compiler {
 	static string[] packages;
 	static string target_glib;
 
-	static bool ccode_only;
 	static string header_filename;
 	static bool compile_only;
 	static string output;
@@ -68,7 +67,6 @@ class Vala.Compiler {
 		{ "basedir", 'b', 0, OptionArg.FILENAME, ref basedir, "Base source directory", "DIRECTORY" },
 		{ "directory", 'd', 0, OptionArg.FILENAME, ref directory, "Output directory", "DIRECTORY" },
 		{ "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null },
-		{ "ccode", 'C', 0, OptionArg.NONE, ref ccode_only, "Output C code", null },
 		{ "header", 'H', 0, OptionArg.FILENAME, ref header_filename, "Output C header file", "FILE" },
 		{ "compile", 'c', 0, OptionArg.NONE, ref compile_only, "Compile but do not link", null },
 		{ "output", 'o', 0, OptionArg.FILENAME, ref output, "Place output in file FILE", "FILE" },
@@ -148,16 +146,6 @@ class Vala.Compiler {
 		context = new CodeContext ();
 		CodeContext.push (context);
 
-		// default to build executable
-		if (!ccode_only && !compile_only && output == null) {
-			// strip extension if there is one
-			// else we use the default output file of the C compiler
-			if (sources[0].rchr (-1, '.') != null) {
-				long dot = sources[0].pointer_to_offset (sources[0].rchr (-1, '.'));
-				output = Path.get_basename (sources[0].substring (0, dot));
-			}
-		}
-
 		context.library = library;
 		context.assert = !disable_assert;
 		context.checking = enable_checking;
@@ -167,7 +155,6 @@ class Vala.Compiler {
 		context.dbus_transformation = !disable_dbus_transformation;
 		context.report.set_verbose_errors (!quiet_mode);
 
-		context.ccode_only = ccode_only;
 		context.compile_only = compile_only;
 		context.header_filename = header_filename;
 		context.output = output;
@@ -323,18 +310,6 @@ class Vala.Compiler {
 			tank_writer.write_file (context, tank_filename);
 
 			library = null;
-		}
-
-		if (!ccode_only) {
-			var ccompiler = new CCodeCompiler ();
-			if (cc_command == null && Environment.get_variable ("CC") != null) {
-				cc_command = Environment.get_variable ("CC");
-			}
-			if (cc_options == null) {
-				ccompiler.compile (context, cc_command, new string[] { });
-			} else {
-				ccompiler.compile (context, cc_command, cc_options);
-			}
 		}
 
 		return quit ();
