@@ -14,15 +14,20 @@ public class TankWriter : CodeVisitor {
 		context.accept(this);
 	}
 
+	public override void visit_namespace (Namespace ns) {
+		ns.accept_children(this);
+	}
+
 	public override void visit_enum (Enum en) {
-		stream.printf("%s\n", en.name);
-
 		en.accept_children(this);
-
 		stream.printf("\n");
 	}
 
 	public override void visit_enum_value(Vala.EnumValue ev) {
-		stream.printf("%s\n", ev.name);
+		stream.printf("%s\n", ev.get_cname());
+	}
+
+	public override void visit_constant(Constant co) {
+		stream.printf("%s\n", co.get_cname());
 	}
 }
