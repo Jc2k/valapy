@@ -2,7 +2,7 @@
 using Gee;
 using Vala;
 
-public class Writer : CodeVisitor {
+public class TankWriter : CodeVisitor {
 
 	private CodeContext context;
 	private FileStream stream;

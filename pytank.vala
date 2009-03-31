@@ -318,6 +318,9 @@ class Vala.Compiler {
 
 			gir_writer.write_file (context, gir_filename);
 
+			var tank_writer = new TankWriter ();
+			string tank_filename = "%s.tank".printf (library);
+			tank_writer.write_file (context, tank_filename);
 
 			library = null;
 		}
