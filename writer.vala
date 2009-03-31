@@ -15,10 +15,6 @@ public class TankWriter : CodeVisitor {
 	}
 
 	public override void visit_enum (Enum en) {
-		if (!en.external_package) {
-			return;
-		}
-
 		stream.printf("%s\n", en.name);
 
 		en.accept_children(this);
@@ -27,10 +23,6 @@ public class TankWriter : CodeVisitor {
 	}
 
 	public override void visit_enum_value(Vala.EnumValue ev) {
-		if (!ev.external_package) {
-			return;
-		}
-
 		stream.printf("%s\n", ev.name);
 	}
 }
