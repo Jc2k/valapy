@@ -3,8 +3,6 @@ using Gee;
 using Vala;
 
 public class TankWriter : CodeVisitor {
-
-
 	public void write_file(CodeContext context, Gee.List<SourceFile> source_files, string filename) {
 		var stream = FileStream.open(filename, "w");
 		var cstream = FileStream.open(filename+".c", "w");
@@ -147,7 +145,8 @@ public class WrapperWriter : SegmentWriter {
 
 class BindingWriter : SegmentWriter {
 	public override void visit_class(Class cl) {
-		cl.accept_children(this);
+		if (interesting(cl))
+			cl.accept_children(this);
 	}
 
 	private void write_type(DataType type) {
@@ -229,9 +228,9 @@ class BindingWriter : SegmentWriter {
 
 	public override void visit_method(Method me) {
 		DataType instance_type = null;
-		//if (me.binding == MemberBinding.INSTANCE) {
+		if (me.binding == MemberBinding.INSTANCE) {
 		//	instance_type = me.parent_symbol;
-		//}
+		}
 		write_call(me.get_cname(), instance_type, me.get_parameters(), me.return_type);
 	}
 
