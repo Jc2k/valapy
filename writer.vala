@@ -107,9 +107,13 @@ public class WrapperWriter : SegmentWriter {
 
 	public override void visit_method(Method me) {
 		this.write_indent();
-		stream.printf("%s = instancemethod(lib.%s)\n", me.name, me.get_cname());
 
-		this.class_has_members = true;
+		if (me.binding == MemberBinding.INSTANCE) {
+			stream.printf("%s = instancemethod(lib.%s)\n", me.name, me.get_cname());
+			this.class_has_members = true;
+		} else {
+			stream.printf("%s = lib.%s\n", me.name, me.get_cname());
+		}
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
