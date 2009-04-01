@@ -190,8 +190,7 @@ class BindingWriter : SegmentWriter {
 		}
 	}
 
-	private void write_params(Gee.List<FormalParameter> params) {
-		bool first = true;
+	private void write_params(Gee.List<FormalParameter> params, bool first = true) {
 		foreach(var p in params) {
 			if (!first)
 				stream.printf(", ");
@@ -208,14 +207,32 @@ class BindingWriter : SegmentWriter {
 		}
 	}
 
-	public override void visit_method(Method me) {
-		stream.printf("lib.%s.argtypes = [", me.get_cname());
-		write_params(me.get_parameters());
+	private void write_call(string cname, DataType ?instance_type, Gee.List<FormalParameter> ?params, DataType ?return_type) {
+		stream.printf("lib.%s.argtypes = [", cname);
+		bool first = true;
+		if (instance_type != null) {
+			write_type(instance_type);
+			first = false;
+		}
+		if (params != null)
+			write_params(params, first);
 		stream.printf("]\n");
 
-		stream.printf("lib.%s.restype = ", me.get_cname());
-		write_type(me.return_type);
-		stream.printf("\n\n");
+		if (return_type != null) {
+			stream.printf("lib.%s.restype = ", cname);
+			write_type(return_type);
+			stream.printf("\n");
+		}
+
+		stream.printf("\n");
+	}
+
+	public override void visit_method(Method me) {
+		DataType instance_type = null;
+		//if (me.binding == MemberBinding.INSTANCE) {
+		//	instance_type = me.parent_symbol;
+		//}
+		write_call(me.get_cname(), instance_type, me.get_parameters(), me.return_type);
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
