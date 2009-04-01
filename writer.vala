@@ -127,11 +127,11 @@ public class WrapperWriter : SegmentWriter {
 	public override void visit_property(Property pr) {
 		if (pr.get_accessor != null) {
 			this.write_indent();
-			stream.printf("get_%s = instancemethod(%s)\n", pr.name, pr.get_accessor.get_cname());
+			stream.printf("get_%s = instancemethod(lib.%s)\n", pr.name, pr.get_accessor.get_cname());
 		}
 		if (pr.set_accessor != null) {
 			this.write_indent();
-			stream.printf("set_%s = instancemethod(%s)\n", pr.name, pr.set_accessor.get_cname());
+			stream.printf("set_%s = instancemethod(lib.%s)\n", pr.name, pr.set_accessor.get_cname());
 		}
 
 		this.write_indent();
@@ -188,7 +188,16 @@ class BindingWriter : SegmentWriter {
 					stream.printf("c_ulong");
 					break;
 				default:
-					stream.printf(t);
+					uint j = 0;
+					char *l = (char *)t;
+					for (uint i = 0; i < t.len(); i++)
+						if (l[i] == '.')
+							j = i+1;
+
+					if (l[t.len()-1] == '*')
+						stream.printf("POINTER(%s)", t.substring(j, t.len()-j-1));
+					else
+						stream.printf(t.substring(j, t.len()-j));
 					break;
 			}
 		}
@@ -245,5 +254,13 @@ class BindingWriter : SegmentWriter {
 	}
 
 	public override void visit_property(Property pr) {
+		if (pr.get_accessor != null) {
+			write_call(pr.get_accessor.get_cname(), null, null, pr.property_type);
+		}
+		if (pr.set_accessor != null) {
+			// var f = new ArrayList<FormalParameter>();
+			// f.add(pr.property_type);
+			// write_call(pr.set_accessor.get_cname(), null, f, null);
+		}
 	}
 }
