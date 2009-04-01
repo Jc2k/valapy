@@ -236,6 +236,8 @@ class BindingWriter : SegmentWriter {
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
+		// do stuff with parent_symbol again..
+		write_call(cr.get_cname(), null, cr.get_parameters(), null);
 	}
 
 	public override void visit_property(Property pr) {
