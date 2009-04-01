@@ -2,6 +2,37 @@
 using Gee;
 using Vala;
 
+class CtypeFunction {
+	string name;
+	string cname;
+	uint indent;
+	bool selfless;
+
+	public CtypeFunction(string name, string cname, uint indent) {
+		this.name = name;
+		this.cname = cname;
+		this.indent = indent;
+
+		this.selfless = false;
+	}
+
+	public void write_indent(StringBuilder sb) {
+		for (uint i = 0; i < indent; i++)
+			sb.append_printf("    ");
+	}
+
+	public string as_string() {
+		var sb = new StringBuilder();
+		write_indent(sb);
+		sb.append_printf("def %s ():\n", this.name);
+		indent++;
+		write_indent(sb);
+		sb.append_printf("lib.%s ()\n", this.cname);
+		sb.append_printf("\n");
+		return sb.str;
+	}
+}
+
 public class TankWriter : CodeVisitor {
 
 	private CodeContext context;
@@ -69,7 +100,7 @@ public class TankWriter : CodeVisitor {
 		if (!interesting(cl))
 			return;
 
-		cstream.printf("%s\n", cl.get_cname());
+		// cstream.printf("printf(""SIZEOF_%%s = %d"", sizeof(%s));\n", cl.get_cname(), cl.get_cname());
 
 		this.write_indent();
 
@@ -103,8 +134,8 @@ public class TankWriter : CodeVisitor {
 	}
 
 	public override void visit_method(Method me) {
-		this.write_indent();
-		stream.printf("%s = None\n", me.name);
+		var cme = new CtypeFunction(me.name, me.get_cname(), indent);
+		stream.printf(cme.as_string());
 
 		this.class_has_members = true;
 	}
@@ -133,5 +164,4 @@ public class TankWriter : CodeVisitor {
 		this.class_has_members = true;
 	}
 
-	
 }
