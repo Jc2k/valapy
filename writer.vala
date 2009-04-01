@@ -62,7 +62,8 @@ public class SegmentWriter : CodeVisitor {
 	}
 
 	public override void visit_namespace (Namespace ns) {
-		ns.accept_children(this);
+		if (interesting(ns))
+			ns.accept_children(this);
 	}
 }
 
@@ -149,11 +150,72 @@ class BindingWriter : SegmentWriter {
 		cl.accept_children(this);
 	}
 
+	private void write_type(DataType type) {
+		if (type is ArrayType) {
+			stream.printf("None");
+		} else if (type is VoidType) {
+			stream.printf("None");
+		} else {
+			var t = type.to_string();
+			switch (t) {
+				case "string":
+				case "char*":
+					stream.printf("c_char_p");
+					break;
+				case "char":
+					stream.printf("c_char");
+					break;
+				case "int":
+					stream.printf("c_int");
+					break;
+				case "uint":
+					stream.printf("c_uint");
+					break;
+				case "bool":
+					stream.printf("c_int");
+					break;
+				case "void*":
+					stream.printf("c_void_p");
+					break;
+				case "long":
+					stream.printf("c_long");
+					break;
+				case "ulong":
+					stream.printf("c_ulong");
+					break;
+				default:
+					stream.printf(t);
+					break;
+			}
+		}
+	}
+
+	private void write_params(Gee.List<FormalParameter> params) {
+		bool first = true;
+		foreach(var p in params) {
+			if (!first)
+				stream.printf(", ");
+			first = false;
+
+			if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT) {
+				stream.printf("POINTER(");
+				write_type(p.parameter_type);
+				stream.printf(")");
+			} else {
+				write_type(p.parameter_type);
+			}
+
+		}
+	}
+
 	public override void visit_method(Method me) {
 		stream.printf("lib.%s.argtypes = [", me.get_cname());
+		write_params(me.get_parameters());
 		stream.printf("]\n");
 
-		stream.printf("lib.%s.restype = %s\n\n", me.get_cname(), "None");
+		stream.printf("lib.%s.restype = ", me.get_cname());
+		write_type(me.return_type);
+		stream.printf("\n\n");
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
