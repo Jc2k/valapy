@@ -2,37 +2,6 @@
 using Gee;
 using Vala;
 
-class CtypeFunction {
-	string name;
-	string cname;
-	uint indent;
-	bool selfless;
-
-	public CtypeFunction(string name, string cname, uint indent) {
-		this.name = name;
-		this.cname = cname;
-		this.indent = indent;
-
-		this.selfless = false;
-	}
-
-	public void write_indent(StringBuilder sb) {
-		for (uint i = 0; i < indent; i++)
-			sb.append_printf("    ");
-	}
-
-	public string as_string() {
-		var sb = new StringBuilder();
-		write_indent(sb);
-		sb.append_printf("def %s ():\n", this.name);
-		indent++;
-		write_indent(sb);
-		sb.append_printf("lib.%s ()\n", this.cname);
-		sb.append_printf("\n");
-		return sb.str;
-	}
-}
-
 public class TankWriter : CodeVisitor {
 
 	private CodeContext context;
@@ -100,30 +69,13 @@ public class TankWriter : CodeVisitor {
 		if (!interesting(cl))
 			return;
 
-		// cstream.printf("printf(""SIZEOF_%%s = %d"", sizeof(%s));\n", cl.get_cname(), cl.get_cname());
-
 		this.write_indent();
-
-		stream.printf("class %s", cl.name);
-		// FIXME: Inheritance here, k thx.
-		stream.printf(":\n\n");
-
-                this.indent++;
-
-                this.write_indent();
-                stream.printf("def __init__(self, ptr):\n");
-
-                this.indent++;
-
-                this.write_indent();
-                stream.printf("self.__ptr__ = ptr\n\n");
-
-                this.indent--;
+		stream.printf("class %s(c_void_p):\n\n", cl.name);
 
 		this.class_has_members = false;
 
+		this.indent++;
 		cl.accept_children(this);
-
 		if (this.class_has_members == false) {
 			this.write_indent();
 			stream.printf("pass\n");
@@ -134,15 +86,15 @@ public class TankWriter : CodeVisitor {
 	}
 
 	public override void visit_method(Method me) {
-		var cme = new CtypeFunction(me.name, me.get_cname(), indent);
-		stream.printf(cme.as_string());
+		this.write_indent();
+		stream.printf("%s = instancemethod(lib.%s)\n", me.name, me.get_cname());
 
 		this.class_has_members = true;
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
 		this.write_indent();
-		stream.printf("%s = None\n", cr.name);
+		stream.printf("%s = staticmethod(lib.%s)\n", cr.name, cr.get_cname());
 
 		this.class_has_members = true;
 	}
