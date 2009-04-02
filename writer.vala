@@ -275,14 +275,14 @@ class BindingWriter : SegmentWriter {
 	public override void visit_method(Method me) {
 		DataType instance_type = null;
 		if (me.binding == MemberBinding.INSTANCE) {
-		//	instance_type = me.parent_symbol;
+			get_data_type_for_symbol ((TypeSymbol) me.parent_symbol);
 		}
 		write_call(me.get_cname(), instance_type, me.get_parameters(), me.return_type);
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
 		// do stuff with parent_symbol again..
-		write_call(cr.get_cname(), null, cr.get_parameters(), null);
+		write_call(cr.get_cname(), null, cr.get_parameters(), get_data_type_for_symbol((TypeSymbol) cr.parent_symbol));
 	}
 
 	public override void visit_property(Property pr) {
