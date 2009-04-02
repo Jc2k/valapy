@@ -197,11 +197,11 @@ public class EnumsAndConstsWriter : SegmentWriter {
 	}
 
 	public override void visit_enum_value(Vala.EnumValue ev) {
-		stream.printf("printf(\"%s = %s\");\n", ev.get_cname(), ev.get_cname());
+		stream.printf("printf(\"%s = %%s\", %s);\n", ev.get_cname(), ev.get_cname());
 	}
 
 	public override void visit_constant(Constant co) {
-		stream.printf("printf(\"%s = %s\");\n", co.get_cname(), co.get_cname());
+		stream.printf("printf(\"%s = %%s\", %s);\n", co.get_cname(), co.get_cname());
 	}
 }
 
