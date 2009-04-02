@@ -305,7 +305,7 @@ class BindingWriter : SegmentWriter {
 	public override void visit_method(Method me) {
 		DataType instance_type = null;
 		if (me.binding == MemberBinding.INSTANCE) {
-			get_data_type_for_symbol ((TypeSymbol) me.parent_symbol);
+			instance_type = get_data_type_for_symbol ((TypeSymbol) me.parent_symbol);
 		}
 		write_call(me.get_cname(), instance_type, me.get_parameters(), me.return_type);
 	}
