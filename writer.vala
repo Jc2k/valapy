@@ -24,9 +24,18 @@ public class TankWriter : CodeVisitor {
 		var bg = new BindingWriter();
 		bg.write_segment(context, source_files, stream);
 
+		// FIXME: We can totally work out what headers to pull in from the VAPI!
+		cstream.printf("#include <stdio.h>\n");
+		cstream.printf("#include <libsyncml/data_sync_api/standard.h>\n");
+		cstream.printf("#include <libsyncml/data_sync_api/defines.h>\n");
+
+		cstream.printf("int main (int argc, char ** argv) {\n");
+
 		var ew = new EnumsAndConstsWriter();
 		ew.write_segment(context, source_files, cstream);
 
+		cstream.printf("return 0;\n");
+		cstream.printf("}\n");
 	}
 }
 
@@ -196,12 +205,18 @@ public class EnumsAndConstsWriter : SegmentWriter {
 		stream.printf("\n");
 	}
 
+	private void write_declaration(string cname, string datatype) {
+		stream.printf("printf(\"%s = %%%s\\n\", %s);\n", cname, datatype, cname);
+	}
+
 	public override void visit_enum_value(Vala.EnumValue ev) {
-		stream.printf("printf(\"%s = %%s\", %s);\n", ev.get_cname(), ev.get_cname());
+		if (interesting(ev))
+			write_declaration(ev.get_cname(), "d");
 	}
 
 	public override void visit_constant(Constant co) {
-		stream.printf("printf(\"%s = %%s\", %s);\n", co.get_cname(), co.get_cname());
+		if (interesting(co))
+			write_declaration(co.get_cname(), "s");
 	}
 }
 
