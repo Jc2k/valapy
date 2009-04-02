@@ -191,6 +191,8 @@ class BindingWriter : SegmentWriter {
 			stream.printf("None");
 		} else if (type is VoidType) {
 			stream.printf("None");
+		} else if (type is EnumValueType) {
+			stream.printf("c_int");
 		} else {
 			var t = type.to_string();
 			switch (t) {
