@@ -206,17 +206,17 @@ public class EnumsAndConstsWriter : SegmentWriter {
 	}
 
 	private void write_declaration(string cname, string datatype) {
-		stream.printf("printf(\"%s = %%%s\\n\", %s);\n", cname, datatype, cname);
+		stream.printf("printf(\"%s = %s\\n\", %s);\n", cname, datatype, cname);
 	}
 
 	public override void visit_enum_value(Vala.EnumValue ev) {
 		if (interesting(ev))
-			write_declaration(ev.get_cname(), "d");
+			write_declaration(ev.get_cname(), "%d");
 	}
 
 	public override void visit_constant(Constant co) {
 		if (interesting(co))
-			write_declaration(co.get_cname(), "s");
+			write_declaration(co.get_cname(), "\\\"%s\\\"");
 	}
 }
 
