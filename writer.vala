@@ -18,6 +18,9 @@ public class TankWriter : CodeVisitor {
 		var wg = new WrapperWriter();
 		wg.write_segment(context, source_files, stream);
 
+		var dg = new DelegateWriter();
+		dg.write_segment(context, source_files, stream);
+
 		var bg = new BindingWriter();
 		bg.write_segment(context, source_files, stream);
 
@@ -90,6 +93,95 @@ public class SegmentWriter : CodeVisitor {
 
 		return type;
 	}
+
+	protected void write_type(DataType type) {
+		if (type is ArrayType) {
+			stream.printf("None");
+		} else if (type is VoidType) {
+			stream.printf("None");
+		} else if (type is EnumValueType) {
+			stream.printf("c_int");
+		} else {
+			var t = type.to_string();
+			switch (t) {
+				case "string":
+				case "char*":
+					stream.printf("c_char_p");
+					break;
+				case "char":
+					stream.printf("c_char");
+					break;
+				case "int":
+					stream.printf("c_int");
+					break;
+				case "uint":
+					stream.printf("c_uint");
+					break;
+				case "bool":
+					stream.printf("c_int");
+					break;
+				case "void*":
+					stream.printf("c_void_p");
+					break;
+				case "long":
+					stream.printf("c_long");
+					break;
+				case "ulong":
+					stream.printf("c_ulong");
+					break;
+				default:
+					uint j = 0;
+					char *l = (char *)t;
+					for (uint i = 0; i < t.len(); i++)
+						if (l[i] == '.')
+							j = i+1;
+
+					if (l[t.len()-1] == '*')
+						stream.printf("POINTER(%s)", t.substring(j, t.len()-j-1));
+					else
+						stream.printf(t.substring(j, t.len()-j));
+					break;
+			}
+		}
+	}
+
+	protected void write_params(Gee.List<FormalParameter> params, bool first = true) {
+		foreach(var p in params) {
+			if (!first)
+				stream.printf(", ");
+			first = false;
+
+			if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT) {
+				stream.printf("POINTER(");
+				write_type(p.parameter_type);
+				stream.printf(")");
+			} else {
+				write_type(p.parameter_type);
+			}
+
+		}
+	}
+
+	protected void write_call(string cname, DataType ?instance_type, Gee.List<FormalParameter> ?params, DataType ?return_type) {
+		stream.printf("lib.%s.argtypes = [", cname);
+		bool first = true;
+		if (instance_type != null) {
+			write_type(instance_type);
+			first = false;
+		}
+		if (params != null)
+			write_params(params, first);
+		stream.printf("]\n");
+
+		if (return_type != null) {
+			stream.printf("lib.%s.restype = ", cname);
+			write_type(return_type);
+			stream.printf("\n");
+		}
+
+		stream.printf("\n");
+	}
+
 
 	public override void visit_namespace (Namespace ns) {
 		if (interesting(ns))
@@ -180,99 +272,20 @@ public class WrapperWriter : SegmentWriter {
 	}
 }
 
+class DelegateWriter : SegmentWriter {
+	public override void visit_delegate(Delegate de) {
+		stream.printf("%s = CFUNCTYPE(", de.name);
+		write_params(de.get_parameters());
+		stream.printf(")\n");
+	}
+}
+
 class BindingWriter : SegmentWriter {
 	public override void visit_class(Class cl) {
 		if (interesting(cl))
 			cl.accept_children(this);
 	}
 
-	private void write_type(DataType type) {
-		if (type is ArrayType) {
-			stream.printf("None");
-		} else if (type is VoidType) {
-			stream.printf("None");
-		} else if (type is EnumValueType) {
-			stream.printf("c_int");
-		} else {
-			var t = type.to_string();
-			switch (t) {
-				case "string":
-				case "char*":
-					stream.printf("c_char_p");
-					break;
-				case "char":
-					stream.printf("c_char");
-					break;
-				case "int":
-					stream.printf("c_int");
-					break;
-				case "uint":
-					stream.printf("c_uint");
-					break;
-				case "bool":
-					stream.printf("c_int");
-					break;
-				case "void*":
-					stream.printf("c_void_p");
-					break;
-				case "long":
-					stream.printf("c_long");
-					break;
-				case "ulong":
-					stream.printf("c_ulong");
-					break;
-				default:
-					uint j = 0;
-					char *l = (char *)t;
-					for (uint i = 0; i < t.len(); i++)
-						if (l[i] == '.')
-							j = i+1;
-
-					if (l[t.len()-1] == '*')
-						stream.printf("POINTER(%s)", t.substring(j, t.len()-j-1));
-					else
-						stream.printf(t.substring(j, t.len()-j));
-					break;
-			}
-		}
-	}
-
-	private void write_params(Gee.List<FormalParameter> params, bool first = true) {
-		foreach(var p in params) {
-			if (!first)
-				stream.printf(", ");
-			first = false;
-
-			if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT) {
-				stream.printf("POINTER(");
-				write_type(p.parameter_type);
-				stream.printf(")");
-			} else {
-				write_type(p.parameter_type);
-			}
-
-		}
-	}
-
-	private void write_call(string cname, DataType ?instance_type, Gee.List<FormalParameter> ?params, DataType ?return_type) {
-		stream.printf("lib.%s.argtypes = [", cname);
-		bool first = true;
-		if (instance_type != null) {
-			write_type(instance_type);
-			first = false;
-		}
-		if (params != null)
-			write_params(params, first);
-		stream.printf("]\n");
-
-		if (return_type != null) {
-			stream.printf("lib.%s.restype = ", cname);
-			write_type(return_type);
-			stream.printf("\n");
-		}
-
-		stream.printf("\n");
-	}
 
 	public override void visit_method(Method me) {
 		DataType instance_type = null;
