@@ -290,7 +290,8 @@ public class WrapperWriter : SegmentWriter {
 class DelegateWriter : SegmentWriter {
 	public override void visit_delegate(Delegate de) {
 		stream.printf("%s = CFUNCTYPE(", de.name);
-		write_params(de.get_parameters());
+		write_type(de.return_type);
+		write_params(de.get_parameters(), false);
 		stream.printf(")\n");
 	}
 }
