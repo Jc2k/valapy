@@ -59,6 +59,38 @@ public class SegmentWriter : CodeVisitor {
 			this.stream.printf("    ");
 	}
 
+	public static DataType get_data_type_for_symbol (TypeSymbol sym) {
+		DataType type = null;
+
+		if (sym is Class) {
+			type = new ObjectType ((Class) sym);
+		} else if (sym is Interface) {
+			type = new ObjectType ((Interface) sym);
+		} else if (sym is Struct) {
+			var st = (Struct) sym;
+			if (st.is_boolean_type ()) {
+				type = new BooleanType (st);
+			} else if (st.is_integer_type ()) {
+				type = new IntegerType (st);
+			} else if (st.is_floating_type ()) {
+				type = new FloatingType (st);
+			} else {
+				type = new StructValueType (st);
+			}
+		} else if (sym is Enum) {
+			type = new EnumValueType ((Enum) sym);
+		} else if (sym is ErrorDomain) {
+			type = new Vala.ErrorType ((ErrorDomain) sym, null);
+		} else if (sym is ErrorCode) {
+			type = new Vala.ErrorType ((ErrorDomain) sym.parent_symbol, (ErrorCode) sym);
+		} else {
+			Report.error (null, "internal error: `%s' is not a supported type".printf (sym.get_full_name ()));
+			return new InvalidType ();
+		}
+
+		return type;
+	}
+
 	public override void visit_namespace (Namespace ns) {
 		if (interesting(ns))
 			ns.accept_children(this);
