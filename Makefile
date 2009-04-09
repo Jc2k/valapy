@@ -4,6 +4,9 @@ VALA_SOURCES =	pytank.vala \
 		pycode/node.vala \
 		pycode/block.vala \
 		pycode/fragment.vala \
+		pycode/assignment.vala \
+		pycode/expression.vala \
+		pycode/constant.vala \
 		pycode/writer.vala \
 		$(NULL)
 
