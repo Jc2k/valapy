@@ -195,13 +195,6 @@ public class SegmentWriter : CodeVisitor {
 	public override void visit_namespace (Namespace ns) {
 		if (interesting(ns))
 			ns.accept_children(this);
-
-		// exercise new code..
-		var wrapper = new PyCode.Fragment();
-		var l = new PyCode.Identifier("foo");
-		var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
-		r.add_argument(new PyCode.Identifier("lib.someFoo"));
-		wrapper.append(new PyCode.Assignment(l, r));
 	}
 }
 
@@ -229,45 +222,49 @@ public class EnumsAndConstsWriter : SegmentWriter {
 
 public class WrapperWriter : SegmentWriter {
 
-	private bool class_has_members;
+	PyCode.Class? current_class;
 
 	public override void visit_class(Class cl) {
 		if (!interesting(cl))
 			return;
 
-		this.write_indent();
-		stream.printf("class %s(c_void_p):\n\n", cl.name);
-
-		this.class_has_members = false;
-
-		this.indent++;
+		current_class = new PyCode.Class(cl.name);
 		cl.accept_children(this);
-		if (this.class_has_members == false) {
-			this.write_indent();
-			stream.printf("pass\n");
-		}
-		this.indent--;
-
-		stream.printf("\n\n");
+		current_class = null;
 	}
 
 	public override void visit_method(Method me) {
-		this.write_indent();
+		var l = new PyCode.Identifier(me.name);
+		var r = new PyCode.Identifier("lib.%s".printf(me.get_cname())) as PyCode.Expression;
 
-		if (me.binding == MemberBinding.INSTANCE) {
-			stream.printf("%s = instancemethod(lib.%s)\n", me.name, me.get_cname());
-		} else {
-			stream.printf("%s = lib.%s\n", me.name, me.get_cname());
+		if (current_class != null) {
+			PyCode.Identifier id;
+
+			if (me.binding == MemberBinding.INSTANCE)
+				id = new PyCode.Identifier("instancemethod");
+			else
+				id = new PyCode.Identifier("staticmethod");
+
+			var r2 = new PyCode.FunctionCall(id);
+			r2.add_argument(r);
+
+			r = r2;
 		}
 
-		this.class_has_members = true;
+		var assignment = new PyCode.Assignment(l, r);
+
+		if (current_class != null)
+			current_class.add_member(assignment);
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
-		this.write_indent();
-		stream.printf("%s = staticmethod(lib.%s)\n", cr.name, cr.get_cname());
+		assert(current_class != null);
 
-		this.class_has_members = true;
+		var l = new PyCode.Identifier(cr.name);
+		var r = new PyCode.FunctionCall(new PyCode.Identifier("staticmethod"));
+		r.add_argument(new PyCode.Identifier("lib.%s".printf(cr.get_cname())));
+
+		current_class.add_member(new PyCode.Assignment(l, r));
 	}
 
 	public override void visit_property(Property pr) {
@@ -289,8 +286,6 @@ public class WrapperWriter : SegmentWriter {
 		if (pr.set_accessor != null)
 			stream.printf("fset=set_%s", pr.name);
 		stream.printf(")\n");
-
-		this.class_has_members = true;
 	}
 }
 
