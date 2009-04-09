@@ -1,5 +1,5 @@
 namespace PyCode {
-	public class Assignment : Node {
+	public class Assignment : Expression {
 
 		public Expression left { get; set; }
 		public Expression right { get; set; }
