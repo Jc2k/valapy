@@ -9,6 +9,7 @@ VALA_SOURCES =	pytank.vala \
 		pycode/constant.vala \
 		pycode/functioncall.vala \
 		pycode/identifier.vala \
+		pycode/class.vala \
 		pycode/writer.vala \
 		$(NULL)
 
