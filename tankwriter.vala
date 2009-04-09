@@ -195,6 +195,13 @@ public class SegmentWriter : CodeVisitor {
 	public override void visit_namespace (Namespace ns) {
 		if (interesting(ns))
 			ns.accept_children(this);
+
+		// exercise new code..
+		var wrapper = new PyCode.Fragment();
+		var l = new PyCode.Identifier("foo");
+		var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
+		r.add_argument(new PyCode.Identifier("lib.someFoo"));
+		wrapper.append(new PyCode.Assignment(l, r));
 	}
 }
 
