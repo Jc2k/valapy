@@ -174,12 +174,6 @@ public class SegmentWriter : CodeVisitor {
 			write_params(params, first);
 		stream.printf("]\n");
 
-		if (return_type != null) {
-			stream.printf("lib.%s.restype = ", cname);
-			write_type(return_type);
-			stream.printf("\n");
-		}
-
 		stream.printf("\n");
 	}
 
@@ -219,6 +213,12 @@ public class WrapperWriter : SegmentWriter {
 	private PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
 	private PyCode.Fragment delegate_fragment = new PyCode.Fragment();
 	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
+
+	private void ctypes_set_return_type(string lib, string name, string type) {
+		var l = new PyCode.Identifier("%s.%s.restype".printf(lib, name));
+		var r = new PyCode.Identifier(type);
+		binding_fragment.append(new PyCode.Assignment(l, r));
+	}
 
 	public new void write_segment(CodeContext context, Gee.List<SourceFile> source_files, FileStream stream) {
 		this.context = context;
@@ -268,6 +268,8 @@ public class WrapperWriter : SegmentWriter {
 			current_class.add_member(assignment);
 		else
 			wrapper_fragment.append(assignment);
+
+		ctypes_set_return_type("lib", me.get_cname(), get_type_string(me.return_type));
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
@@ -276,22 +278,35 @@ public class WrapperWriter : SegmentWriter {
 		var l = new PyCode.Identifier(cr.name);
 		var r = new PyCode.FunctionCall(new PyCode.Identifier("staticmethod"));
 		r.add_argument(new PyCode.Identifier("lib.%s".printf(cr.get_cname())));
-
 		current_class.add_member(new PyCode.Assignment(l, r));
+
+		var t = get_data_type_for_symbol((TypeSymbol) cr.parent_symbol);
+		ctypes_set_return_type("lib", cr.get_cname(), get_type_string(t));
 	}
 
 	public override void visit_property(Property pr) {
 		if (pr.get_accessor != null) {
+			// Attach the getter to a class object
 			var l = new PyCode.Identifier("get_%s".printf(pr.name));
 			var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
 			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.get_accessor.get_cname())));
 			current_class.add_member(new PyCode.Assignment(l, r));
+
+			ctypes_set_return_type("lib", pr.get_accessor.get_cname(), get_type_string(pr.property_type));
 		}
 		if (pr.set_accessor != null) {
+			// Attach the setter to the class object
 			var l = new PyCode.Identifier("set_%s".printf(pr.name));
 			var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
 			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.set_accessor.get_cname())));
 			current_class.add_member(new PyCode.Assignment(l, r));
+
+			// Tell ctypes that the setter function takes a foobar value..
+			var argl = new PyCode.Identifier("lib.%s.args".printf(pr.set_accessor.get_cname()));
+			// var argr = new PyCode.List();
+			// binding_wrapper.append(new PyCode.Assignment(argl, argr);
+
+			ctypes_set_return_type("lib", pr.set_accessor.get_cname(), "None");
 		}
 
 		var l = new PyCode.Identifier(pr.name);
@@ -320,7 +335,6 @@ class BindingWriter : SegmentWriter {
 		if (interesting(cl))
 			cl.accept_children(this);
 	}
-
 
 	public override void visit_method(Method me) {
 		DataType instance_type = null;
