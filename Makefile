@@ -1,6 +1,9 @@
 NULL = 
-VALA_SOURCES =	pytank.vala \
-		tankwriter.vala \
+
+VALA_SOURCES = \
+		bindgen/bindgen.vala \
+		bindgen/pygen.vala \
+		bindgen/cgen.vala \
 		pycode/node.vala \
 		pycode/block.vala \
 		pycode/fragment.vala \
@@ -14,8 +17,8 @@ VALA_SOURCES =	pytank.vala \
 		pycode/writer.vala \
 		$(NULL)
 
-pytank: $(VALA_SOURCES)
-	valac --pkg vala-1.0 $(VALA_SOURCES) -X -I/usr/include/vala-1.0 --save-temps
+bg: $(VALA_SOURCES)
+	valac -o bg --pkg vala-1.0 $(VALA_SOURCES) -X -I/usr/include/vala-1.0 --save-temps
 
-check: pytank
-	./pytank --library pysyncml libsyncml-1.0.vapi
+check: bg
+	./bg --library pysyncml libsyncml-1.0.vapi
