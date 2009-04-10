@@ -4,7 +4,7 @@ using Vala;
 
 public class EnumsWriter : CodeVisitor {
 	public void write_file(CodeContext context, Gee.List<SourceFile> source_files, string filename) {
-		var cstream = FileStream.open(filename+".c", "w");
+		var cstream = FileStream.open(filename, "w");
 
 		cstream.printf("#include <stdio.h>\n");
 		cstream.printf("#include <libsyncml/data_sync_api/standard.h>\n");

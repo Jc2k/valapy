@@ -5,7 +5,6 @@ using Vala;
 public class CtypesWriter : CodeVisitor {
 	public void write_file(CodeContext context, Gee.List<SourceFile> source_files, string filename) {
 		var stream = FileStream.open(filename, "w");
-		var cstream = FileStream.open(filename+".c", "w");
 
 		stream.printf("from ctypes import *\n\n");
 		stream.printf("lib = CDLL('libsyncml.so')\n\n");
