@@ -39,8 +39,6 @@ public class SegmentWriter : CodeVisitor {
 	protected Gee.List<SourceFile> source_files;
 	protected weak FileStream stream;
 
-	protected uint indent = 0;
-
 	public void write_segment(CodeContext context, Gee.List<SourceFile> source_files, FileStream stream) {
 		this.context = context;
 		this.source_files = source_files;
@@ -59,120 +57,6 @@ public class SegmentWriter : CodeVisitor {
 
 		return false;
 	}
-
-	protected void write_indent() {
-		for (uint i = 0; i < this.indent; i++)
-			this.stream.printf("    ");
-	}
-
-	public static DataType get_data_type_for_symbol (TypeSymbol sym) {
-		DataType type = null;
-
-		if (sym is Class) {
-			type = new ObjectType ((Class) sym);
-		} else if (sym is Interface) {
-			type = new ObjectType ((Interface) sym);
-		} else if (sym is Struct) {
-			var st = (Struct) sym;
-			if (st.is_boolean_type ()) {
-				type = new BooleanType (st);
-			} else if (st.is_integer_type ()) {
-				type = new IntegerType (st);
-			} else if (st.is_floating_type ()) {
-				type = new FloatingType (st);
-			} else {
-				type = new StructValueType (st);
-			}
-		} else if (sym is Enum) {
-			type = new EnumValueType ((Enum) sym);
-		} else if (sym is ErrorDomain) {
-			type = new Vala.ErrorType ((ErrorDomain) sym, null);
-		} else if (sym is ErrorCode) {
-			type = new Vala.ErrorType ((ErrorDomain) sym.parent_symbol, (ErrorCode) sym);
-		} else {
-			Report.error (null, "internal error: `%s' is not a supported type".printf (sym.get_full_name ()));
-			return new InvalidType ();
-		}
-
-		return type;
-	}
-
-	protected void write_type(DataType type) {
-		stream.printf(get_type_string(type));
-	}
-
-	protected string get_type_string(DataType type) {
-		if (type is ArrayType) {
-			return "None";
-		} else if (type is VoidType) {
-			return "None";
-		} else if (type is EnumValueType) {
-			return "c_int";
-		} else {
-			var t = type.to_string();
-			switch (t) {
-				case "string":
-				case "char*":
-					return "c_char_p";
-				case "char":
-					return "c_char";
-				case "int":
-					return "c_int";
-				case "uint":
-					return "c_uint";
-				case "bool":
-					return "c_int";
-				case "void*":
-					return "c_void_p";
-				case "long":
-					return "c_long";
-				case "ulong":
-					return "c_ulong";
-				default:
-					uint j = 0;
-					char *l = (char *)t;
-					for (uint i = 0; i < t.len(); i++)
-						if (l[i] == '.')
-							j = i+1;
-
-					if (l[t.len()-1] == '*')
-						return "POINTER(%s)".printf(t.substring(j, t.len()-j-1));
-					else
-						return t.substring(j, t.len()-j);
-			}
-		}
-	}
-
-	protected string get_param_type(FormalParameter p) {
-		if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT)
-			return "POINTER(%s)".printf(get_type_string(p.parameter_type));
-		return get_type_string(p.parameter_type);
-	}
-
-	protected void write_params(Gee.List<FormalParameter> params, bool first = true) {
-		foreach(var p in params) {
-			if (!first)
-				stream.printf(", ");
-			first = false;
-
-			stream.printf(get_param_type(p));
-		}
-	}
-
-	protected void write_call(string cname, DataType ?instance_type, Gee.List<FormalParameter> ?params, DataType ?return_type) {
-		stream.printf("lib.%s.argtypes = [", cname);
-		bool first = true;
-		if (instance_type != null) {
-			write_type(instance_type);
-			first = false;
-		}
-		if (params != null)
-			write_params(params, first);
-		stream.printf("]\n");
-
-		stream.printf("\n");
-	}
-
 
 	public override void visit_namespace (Namespace ns) {
 		if (interesting(ns))
@@ -219,6 +103,86 @@ public class WrapperWriter : SegmentWriter {
 		var l = new PyCode.Identifier("%s.%s.restype".printf(lib, name));
 		var r = new PyCode.Identifier(type);
 		binding_fragment.append(new PyCode.Assignment(l, r));
+	}
+
+	private DataType get_data_type_for_symbol (TypeSymbol sym) {
+		DataType type = null;
+
+		if (sym is Class) {
+			type = new ObjectType ((Class) sym);
+		} else if (sym is Interface) {
+			type = new ObjectType ((Interface) sym);
+		} else if (sym is Struct) {
+			var st = (Struct) sym;
+			if (st.is_boolean_type ()) {
+				type = new BooleanType (st);
+			} else if (st.is_integer_type ()) {
+				type = new IntegerType (st);
+			} else if (st.is_floating_type ()) {
+				type = new FloatingType (st);
+			} else {
+				type = new StructValueType (st);
+			}
+		} else if (sym is Enum) {
+			type = new EnumValueType ((Enum) sym);
+		} else if (sym is ErrorDomain) {
+			type = new Vala.ErrorType ((ErrorDomain) sym, null);
+		} else if (sym is ErrorCode) {
+			type = new Vala.ErrorType ((ErrorDomain) sym.parent_symbol, (ErrorCode) sym);
+		} else {
+			Report.error (null, "internal error: `%s' is not a supported type".printf (sym.get_full_name ()));
+			return new InvalidType ();
+		}
+
+		return type;
+	}
+
+	private string get_type_string(DataType type) {
+		if (type is ArrayType) {
+			return "None";
+		} else if (type is VoidType) {
+			return "None";
+		} else if (type is EnumValueType) {
+			return "c_int";
+		} else {
+			var t = type.to_string();
+			switch (t) {
+				case "string":
+				case "char*":
+					return "c_char_p";
+				case "char":
+					return "c_char";
+				case "int":
+					return "c_int";
+				case "uint":
+					return "c_uint";
+				case "bool":
+					return "c_int";
+				case "void*":
+					return "c_void_p";
+				case "long":
+					return "c_long";
+				case "ulong":
+					return "c_ulong";
+				default:
+					uint j = 0;
+					char *l = (char *)t;
+					for (uint i = 0; i < t.len(); i++)
+						if (l[i] == '.')
+							j = i+1;
+
+					if (l[t.len()-1] == '*')
+						return "POINTER(%s)".printf(t.substring(j, t.len()-j-1));
+					else
+						return t.substring(j, t.len()-j);
+			}
+		}
+	}
+
+	private string get_param_type(FormalParameter p) {
+		if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT)
+			return "POINTER(%s)".printf(get_type_string(p.parameter_type));
+		return get_type_string(p.parameter_type);
 	}
 
 	public new void write_segment(CodeContext context, Gee.List<SourceFile> source_files, FileStream stream) {
