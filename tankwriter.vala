@@ -323,7 +323,8 @@ public class WrapperWriter : SegmentWriter {
 		var l = new PyCode.Identifier(de.name);
 		var r = new PyCode.FunctionCall(new PyCode.Identifier("CFUNCTYPE"));
 		r.add_argument(new PyCode.Identifier(get_type_string(de.return_type)));
-		// write_params(de.get_parameters(), false);
+		foreach (var p in de.get_parameters())
+			r.add_argument(new PyCode.Identifier(get_param_type(p)));
 
 		delegate_fragment.append(new PyCode.Assignment(l, r));
 	}
