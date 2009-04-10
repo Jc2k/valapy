@@ -146,20 +146,19 @@ public class SegmentWriter : CodeVisitor {
 		}
 	}
 
+	protected string get_param_type(FormalParameter p) {
+		if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT)
+			return "POINTER(%s)".printf(get_type_string(p.parameter_type));
+		return get_type_string(p.parameter_type);
+	}
+
 	protected void write_params(Gee.List<FormalParameter> params, bool first = true) {
 		foreach(var p in params) {
 			if (!first)
 				stream.printf(", ");
 			first = false;
 
-			if (p.direction == ParameterDirection.REF || p.direction == ParameterDirection.OUT) {
-				stream.printf("POINTER(");
-				write_type(p.parameter_type);
-				stream.printf(")");
-			} else {
-				write_type(p.parameter_type);
-			}
-
+			stream.printf(get_param_type(p));
 		}
 	}
 
