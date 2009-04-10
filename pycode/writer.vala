@@ -17,6 +17,10 @@ namespace PyCode {
 				write_string("    ");
 		}
 
+		public void write_newline() {
+			stream.putc('\n');
+		}
+
 		public void begin_block() {
 			indent++;
 		}

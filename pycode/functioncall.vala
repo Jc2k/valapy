@@ -14,6 +14,23 @@ namespace PyCode {
 		}
 
 		public override void write (Writer writer) {
+			assert (call != null);
+
+			call.write (writer);
+
+			writer.write_string("(");
+
+			bool first = true;
+			foreach (var a in arguments) {
+				if (!first)
+					writer.write_string(", ");
+				else
+					first = false;
+
+				a.write (writer);
+			}
+
+			writer.write_string(")");
 		}
 	}
 }

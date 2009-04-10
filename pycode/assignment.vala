@@ -13,8 +13,9 @@ namespace PyCode {
 
 		public override void write (Writer writer) {
 			left.write (writer);
-			// writer.write_string(" = );
+			writer.write_string(" = ");
 			right.write (writer);
+			writer.write_newline();
 		}
 	}
 

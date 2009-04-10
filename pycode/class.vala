@@ -17,6 +17,7 @@ namespace PyCode {
 			writer.write_string("class ");
 			writer.write_string(name);
 			writer.write_string(":");
+			writer.write_newline();
 
 			bool flag = true;
 			foreach (var n in nodes) {
@@ -27,7 +28,11 @@ namespace PyCode {
 			// If this class has no members then emit pass statment..
 			if (flag) {
 				writer.write_string("pass");
+				writer.write_newline();
 			}
+
+			writer.write_newline();
+			writer.write_newline();
 		}
 	}
 }

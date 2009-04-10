@@ -226,6 +226,16 @@ public class WrapperWriter : SegmentWriter {
 
 	PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
 
+	public new void write_segment(CodeContext context, Gee.List<SourceFile> source_files, FileStream stream) {
+		this.context = context;
+		this.source_files = source_files;
+
+		context.accept (this);
+
+		var writer = new PyCode.Writer (stream);
+		wrapper_fragment.write (writer);
+	}
+
 	public override void visit_class(Class cl) {
 		if (!interesting(cl))
 			return;
