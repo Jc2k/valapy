@@ -214,7 +214,7 @@ public class WrapperWriter : SegmentWriter {
 	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
 
 	private void ctypes_set_arg_types(string lib, string name, PyCode.List list) {
-		var l = new PyCode.Identifier("%s.%s".printf(lib, name));
+		var l = new PyCode.Identifier("%s.%s.argtypes".printf(lib, name));
 		binding_fragment.append(new PyCode.Assignment(l, list));
 	}
 
@@ -274,10 +274,14 @@ public class WrapperWriter : SegmentWriter {
 			wrapper_fragment.append(assignment);
 
 		var lst = new PyCode.List();
+		if (me.binding == MemberBinding.INSTANCE) {
+			var instance_type = get_data_type_for_symbol ((TypeSymbol) me.parent_symbol);
+			lst.append(new PyCode.Identifier(get_type_string(instance_type)));
+		}
 		foreach (var a in me.get_parameters())
 			lst.append(new PyCode.Identifier(get_param_type(a)));
-
 		ctypes_set_arg_types("lib", me.get_cname(), lst);
+
 		ctypes_set_return_type("lib", me.get_cname(), get_type_string(me.return_type));
 	}
 
@@ -288,6 +292,11 @@ public class WrapperWriter : SegmentWriter {
 		var r = new PyCode.FunctionCall(new PyCode.Identifier("staticmethod"));
 		r.add_argument(new PyCode.Identifier("lib.%s".printf(cr.get_cname())));
 		current_class.add_member(new PyCode.Assignment(l, r));
+
+		var lst = new PyCode.List();
+		foreach (var p in cr.get_parameters())
+			lst.append(new PyCode.Identifier(get_param_type(p)));
+		ctypes_set_arg_types("lib", cr.get_cname(), lst);
 
 		var t = get_data_type_for_symbol((TypeSymbol) cr.parent_symbol);
 		ctypes_set_return_type("lib", cr.get_cname(), get_type_string(t));
@@ -344,19 +353,6 @@ class BindingWriter : SegmentWriter {
 	public override void visit_class(Class cl) {
 		if (interesting(cl))
 			cl.accept_children(this);
-	}
-
-	public override void visit_method(Method me) {
-		DataType instance_type = null;
-		if (me.binding == MemberBinding.INSTANCE) {
-			instance_type = get_data_type_for_symbol ((TypeSymbol) me.parent_symbol);
-		}
-		write_call(me.get_cname(), instance_type, me.get_parameters(), me.return_type);
-	}
-
-	public override void visit_creation_method(CreationMethod cr) {
-		// do stuff with parent_symbol again..
-		write_call(cr.get_cname(), null, cr.get_parameters(), get_data_type_for_symbol((TypeSymbol) cr.parent_symbol));
 	}
 
 	public override void visit_property(Property pr) {
