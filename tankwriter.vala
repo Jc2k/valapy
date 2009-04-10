@@ -224,12 +224,17 @@ public class WrapperWriter : SegmentWriter {
 
 	PyCode.Class? current_class;
 
+	PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
+
 	public override void visit_class(Class cl) {
 		if (!interesting(cl))
 			return;
 
 		current_class = new PyCode.Class(cl.name);
+		wrapper_fragment.append(current_class);
+
 		cl.accept_children(this);
+
 		current_class = null;
 	}
 
