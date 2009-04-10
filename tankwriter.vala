@@ -213,6 +213,11 @@ public class WrapperWriter : SegmentWriter {
 	private PyCode.Fragment delegate_fragment = new PyCode.Fragment();
 	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
 
+	private void ctypes_set_arg_types(string lib, string name, PyCode.List list) {
+		var l = new PyCode.Identifier("%s.%s".printf(lib, name));
+		binding_fragment.append(new PyCode.Assignment(l, list));
+	}
+
 	private void ctypes_set_return_type(string lib, string name, string type) {
 		var l = new PyCode.Identifier("%s.%s.restype".printf(lib, name));
 		var r = new PyCode.Identifier(type);
@@ -268,6 +273,11 @@ public class WrapperWriter : SegmentWriter {
 		else
 			wrapper_fragment.append(assignment);
 
+		var lst = new PyCode.List();
+		foreach (var a in me.get_parameters())
+			lst.append(new PyCode.Identifier(get_param_type(a)));
+
+		ctypes_set_arg_types("lib", me.get_cname(), lst);
 		ctypes_set_return_type("lib", me.get_cname(), get_type_string(me.return_type));
 	}
 
