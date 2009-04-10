@@ -308,7 +308,7 @@ public class WrapperWriter : SegmentWriter {
 	public override void visit_delegate(Delegate de) {
 		var l = new PyCode.Identifier(de.name);
 		var r = new PyCode.FunctionCall(new PyCode.Identifier("CFUNCTYPE"));
-		// write_type(de.return_type);
+		r.add_argument(new PyCode.Identifier(get_type_string(de.return_type)));
 		// write_params(de.get_parameters(), false);
 
 		delegate_fragment.append(new PyCode.Assignment(l, r));
