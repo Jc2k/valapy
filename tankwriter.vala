@@ -303,8 +303,8 @@ public class WrapperWriter : SegmentWriter {
 
 			// Tell ctypes that the setter function takes a foobar value..
 			var argl = new PyCode.Identifier("lib.%s.args".printf(pr.set_accessor.get_cname()));
-			// var argr = new PyCode.List();
-			// binding_wrapper.append(new PyCode.Assignment(argl, argr);
+			var argr = new PyCode.List();
+			binding_fragment.append(new PyCode.Assignment(argl, argr));
 
 			ctypes_set_return_type("lib", pr.set_accessor.get_cname(), "None");
 		}
