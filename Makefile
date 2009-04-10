@@ -22,3 +22,6 @@ bg: $(VALA_SOURCES)
 
 check: bg
 	./bg --library pysyncml test/libsyncml-1.0.vapi
+	gcc -I/usr/include/libsyncml-1.0 pysyncml.c -o gen-enums
+	./gen-enums > enums.py
+	python pysyncml.py
