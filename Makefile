@@ -21,4 +21,4 @@ bg: $(VALA_SOURCES)
 	valac -o bg --pkg vala-1.0 $(VALA_SOURCES) -X -I/usr/include/vala-1.0 --save-temps
 
 check: bg
-	./bg --library pysyncml libsyncml-1.0.vapi
+	./bg --library pysyncml test/libsyncml-1.0.vapi
