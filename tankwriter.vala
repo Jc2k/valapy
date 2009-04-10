@@ -269,23 +269,27 @@ public class WrapperWriter : SegmentWriter {
 
 	public override void visit_property(Property pr) {
 		if (pr.get_accessor != null) {
-			this.write_indent();
-			stream.printf("get_%s = instancemethod(lib.%s)\n", pr.name, pr.get_accessor.get_cname());
+			var l = new PyCode.Identifier("get_%s".printf(pr.name));
+			var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
+			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.get_accessor.get_cname())));
+			current_class.add_member(new PyCode.Assignment(l, r));
 		}
 		if (pr.set_accessor != null) {
-			this.write_indent();
-			stream.printf("set_%s = instancemethod(lib.%s)\n", pr.name, pr.set_accessor.get_cname());
+			var l = new PyCode.Identifier("set_%s".printf(pr.name));
+			var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
+			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.set_accessor.get_cname())));
+			current_class.add_member(new PyCode.Assignment(l, r));
 		}
 
-		this.write_indent();
-		stream.printf("%s = property(", pr.name);
+		var l = new PyCode.Identifier(pr.name);
+		var r = new PyCode.FunctionCall(new PyCode.Identifier("property"));
+
 		if (pr.get_accessor != null)
-			stream.printf("fget=get_%s", pr.name);
-		if (pr.get_accessor != null && pr.set_accessor != null)
-			stream.printf(", ");
+			r.add_argument(new PyCode.Identifier("fget=get_%s".printf(pr.name)));
 		if (pr.set_accessor != null)
-			stream.printf("fset=set_%s", pr.name);
-		stream.printf(")\n");
+			r.add_argument(new PyCode.Identifier("fset=set_%s".printf(pr.name)));
+
+		current_class.add_member(new PyCode.Assignment(l, r));
 	}
 }
 

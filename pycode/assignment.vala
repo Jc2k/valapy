@@ -5,7 +5,7 @@ namespace PyCode {
 		public Expression right { get; set; }
 		public AssignmentOperator operator { get; set; }
 
-		Assignment (Expression l, Expression r, AssignmentOperator op = AssignmentOperator.SIMPLE) {
+		public Assignment (Expression l, Expression r, AssignmentOperator op = AssignmentOperator.SIMPLE) {
 			left = l;
 			right = r;
 			operator = op;
