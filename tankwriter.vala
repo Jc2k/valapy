@@ -18,9 +18,6 @@ public class TankWriter : CodeVisitor {
 		var wg = new WrapperWriter();
 		wg.write_segment(context, source_files, stream);
 
-		var bg = new BindingWriter();
-		bg.write_segment(context, source_files, stream);
-
 		// FIXME: We can totally work out what headers to pull in from the VAPI!
 		cstream.printf("#include <stdio.h>\n");
 		cstream.printf("#include <libsyncml/data_sync_api/standard.h>\n");
@@ -303,12 +300,18 @@ public class WrapperWriter : SegmentWriter {
 	}
 
 	public override void visit_property(Property pr) {
+		var instance_type = get_data_type_for_symbol ((TypeSymbol) pr.parent_symbol);
+
 		if (pr.get_accessor != null) {
 			// Attach the getter to a class object
 			var l = new PyCode.Identifier("get_%s".printf(pr.name));
 			var r = new PyCode.FunctionCall(new PyCode.Identifier("instancemethod"));
 			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.get_accessor.get_cname())));
 			current_class.add_member(new PyCode.Assignment(l, r));
+
+			var lst = new PyCode.List();
+			lst.append(new PyCode.Identifier(get_type_string(instance_type)));
+			ctypes_set_arg_types("lib", pr.get_accessor.get_cname(), lst);
 
 			ctypes_set_return_type("lib", pr.get_accessor.get_cname(), get_type_string(pr.property_type));
 		}
@@ -319,10 +322,10 @@ public class WrapperWriter : SegmentWriter {
 			r.add_argument(new PyCode.Identifier("lib.%s".printf(pr.set_accessor.get_cname())));
 			current_class.add_member(new PyCode.Assignment(l, r));
 
-			// Tell ctypes that the setter function takes a foobar value..
-			var argl = new PyCode.Identifier("lib.%s.args".printf(pr.set_accessor.get_cname()));
-			var argr = new PyCode.List();
-			binding_fragment.append(new PyCode.Assignment(argl, argr));
+			var lst = new PyCode.List();
+			lst.append(new PyCode.Identifier(get_type_string(instance_type)));
+			lst.append(new PyCode.Identifier(get_type_string(pr.property_type)));
+			ctypes_set_arg_types("lib", pr.set_accessor.get_cname(), lst);
 
 			ctypes_set_return_type("lib", pr.set_accessor.get_cname(), "None");
 		}
@@ -349,20 +352,3 @@ public class WrapperWriter : SegmentWriter {
 	}
 }
 
-class BindingWriter : SegmentWriter {
-	public override void visit_class(Class cl) {
-		if (interesting(cl))
-			cl.accept_children(this);
-	}
-
-	public override void visit_property(Property pr) {
-		if (pr.get_accessor != null) {
-			write_call(pr.get_accessor.get_cname(), null, null, pr.property_type);
-		}
-		if (pr.set_accessor != null) {
-			// var f = new ArrayList<FormalParameter>();
-			// f.add(pr.property_type);
-			// write_call(pr.set_accessor.get_cname(), null, f, null);
-		}
-	}
-}
