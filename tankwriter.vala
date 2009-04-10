@@ -101,40 +101,36 @@ public class SegmentWriter : CodeVisitor {
 	}
 
 	protected void write_type(DataType type) {
+		stream.printf(get_type_string(type));
+	}
+
+	protected string get_type_string(DataType type) {
 		if (type is ArrayType) {
-			stream.printf("None");
+			return "None";
 		} else if (type is VoidType) {
-			stream.printf("None");
+			return "None";
 		} else if (type is EnumValueType) {
-			stream.printf("c_int");
+			return "c_int";
 		} else {
 			var t = type.to_string();
 			switch (t) {
 				case "string":
 				case "char*":
-					stream.printf("c_char_p");
-					break;
+					return "c_char_p";
 				case "char":
-					stream.printf("c_char");
-					break;
+					return "c_char";
 				case "int":
-					stream.printf("c_int");
-					break;
+					return "c_int";
 				case "uint":
-					stream.printf("c_uint");
-					break;
+					return "c_uint";
 				case "bool":
-					stream.printf("c_int");
-					break;
+					return "c_int";
 				case "void*":
-					stream.printf("c_void_p");
-					break;
+					return "c_void_p";
 				case "long":
-					stream.printf("c_long");
-					break;
+					return "c_long";
 				case "ulong":
-					stream.printf("c_ulong");
-					break;
+					return "c_ulong";
 				default:
 					uint j = 0;
 					char *l = (char *)t;
@@ -143,10 +139,9 @@ public class SegmentWriter : CodeVisitor {
 							j = i+1;
 
 					if (l[t.len()-1] == '*')
-						stream.printf("POINTER(%s)", t.substring(j, t.len()-j-1));
+						return "POINTER(%s)".printf(t.substring(j, t.len()-j-1));
 					else
-						stream.printf(t.substring(j, t.len()-j));
-					break;
+						return t.substring(j, t.len()-j);
 			}
 		}
 	}
