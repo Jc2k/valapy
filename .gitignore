@@ -1,2 +1,6 @@
 *.c
 *.h
+enums.py
+pysyncml.py
+gen-enums
+bg
