@@ -202,6 +202,7 @@ public class WrapperWriter : SegmentWriter {
 			return;
 
 		current_class = new PyCode.Class(cl.name);
+		current_class.parent_class = "c_void_p";
 		wrapper_fragment.append(current_class);
 
 		cl.accept_children(this);
