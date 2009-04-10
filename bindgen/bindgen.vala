@@ -290,9 +290,13 @@ class Vala.Compiler {
 		}
 		
 		if (library != null) {
-			var tank_writer = new TankWriter ();
-			string tank_filename = "%s.tank".printf (library);
-			tank_writer.write_file (context, source_files, tank_filename);
+			var pycode = new CtypesWriter ();
+			string py_filename = "%s.py".printf (library);
+			pycode.write_file (context, source_files, py_filename);
+
+			var ccode = new EnumsWriter ();
+			string c_filename = "%s.c".printf (library);
+			ccode.write_file (context, source_files, c_filename);
 
 			library = null;
 		}
