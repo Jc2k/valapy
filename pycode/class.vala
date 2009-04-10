@@ -3,6 +3,10 @@ using Gee;
 namespace PyCode {
 	public class Class : Node {
 		public string name { get; set; }
+
+		// FIXME: Single inheritance..
+		public string? parent_class { get; set; default=null; }
+
 		private Gee.List<Node> nodes = new ArrayList<Node>();
 
 		public Class (string n) {
@@ -16,6 +20,9 @@ namespace PyCode {
 		public override void write (Writer writer) {
 			writer.write_string("class ");
 			writer.write_string(name);
+			if (base != null) {
+				writer.write_string("(%s)".printf(parent_class));
+			}
 			writer.write_string(":");
 			writer.write_newline();
 
