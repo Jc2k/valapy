@@ -3,6 +3,17 @@ using Gee;
 using Vala;
 
 public class CtypesWriter : CodeVisitor {
+
+	protected CodeContext context;
+	protected Gee.List<SourceFile> source_files;
+	protected weak FileStream stream;
+
+	private PyCode.Class? current_class;
+
+	private PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
+	private PyCode.Fragment delegate_fragment = new PyCode.Fragment();
+	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
+
 	public void write_file(CodeContext context, Gee.List<SourceFile> source_files, string filename) {
 		var stream = FileStream.open(filename, "w");
 
@@ -16,10 +27,6 @@ public class CtypesWriter : CodeVisitor {
 
 		write_segment(context, source_files, stream);
 	}
-
-	protected CodeContext context;
-	protected Gee.List<SourceFile> source_files;
-	protected weak FileStream stream;
 
 	protected bool interesting(CodeNode node) {
 		if (node.source_reference == null)
@@ -36,12 +43,6 @@ public class CtypesWriter : CodeVisitor {
 		if (interesting(ns))
 			ns.accept_children(this);
 	}
-
-	private PyCode.Class? current_class;
-
-	private PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
-	private PyCode.Fragment delegate_fragment = new PyCode.Fragment();
-	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
 
 	private void ctypes_set_arg_types(string lib, string name, PyCode.List list) {
 		var l = new PyCode.Identifier("%s.%s.argtypes".printf(lib, name));
