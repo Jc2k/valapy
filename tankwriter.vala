@@ -18,9 +18,6 @@ public class TankWriter : CodeVisitor {
 		var wg = new WrapperWriter();
 		wg.write_segment(context, source_files, stream);
 
-		var dg = new DelegateWriter();
-		dg.write_segment(context, source_files, stream);
-
 		var bg = new BindingWriter();
 		bg.write_segment(context, source_files, stream);
 
@@ -222,9 +219,11 @@ public class EnumsAndConstsWriter : SegmentWriter {
 
 public class WrapperWriter : SegmentWriter {
 
-	PyCode.Class? current_class;
+	private PyCode.Class? current_class;
 
-	PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
+	private PyCode.Fragment wrapper_fragment = new PyCode.Fragment();
+	private PyCode.Fragment delegate_fragment = new PyCode.Fragment();
+	private PyCode.Fragment binding_fragment = new PyCode.Fragment();
 
 	public new void write_segment(CodeContext context, Gee.List<SourceFile> source_files, FileStream stream) {
 		this.context = context;
@@ -234,6 +233,8 @@ public class WrapperWriter : SegmentWriter {
 
 		var writer = new PyCode.Writer (stream);
 		wrapper_fragment.write (writer);
+		delegate_fragment.write (writer);
+		binding_fragment.write (writer);
 	}
 
 	public override void visit_class(Class cl) {
@@ -270,6 +271,8 @@ public class WrapperWriter : SegmentWriter {
 
 		if (current_class != null)
 			current_class.add_member(assignment);
+		else
+			wrapper_fragment.append(assignment);
 	}
 
 	public override void visit_creation_method(CreationMethod cr) {
@@ -306,14 +309,14 @@ public class WrapperWriter : SegmentWriter {
 
 		current_class.add_member(new PyCode.Assignment(l, r));
 	}
-}
 
-class DelegateWriter : SegmentWriter {
 	public override void visit_delegate(Delegate de) {
-		stream.printf("%s = CFUNCTYPE(", de.name);
-		write_type(de.return_type);
-		write_params(de.get_parameters(), false);
-		stream.printf(")\n");
+		var l = new PyCode.Identifier(de.name);
+		var r = new PyCode.FunctionCall(new PyCode.Identifier("CFUNCTYPE"));
+		// write_type(de.return_type);
+		// write_params(de.get_parameters(), false);
+
+		delegate_fragment.append(new PyCode.Assignment(l, r));
 	}
 }
 
