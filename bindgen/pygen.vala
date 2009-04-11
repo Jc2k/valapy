@@ -20,20 +20,24 @@ public class CtypesWriter : CodeVisitor {
 		stream.printf("from ctypes import *\n\n");
 		stream.printf("lib = CDLL('libsyncml.so')\n\n");
 
-		stream.printf("def instancemethod(method):\n");
-		stream.printf("    def _(self, *args, **kwargs):\n");
-		stream.printf("        return method(self, *args, **kwargs)\n");
-		stream.printf("    return _\n\n");
-
                 var f2 = new PyCode.Function("_");
 		f2.add_argument(new PyCode.Identifier("self"));
 		f2.add_argument(new PyCode.Identifier("*args"));
 		f2.add_argument(new PyCode.Identifier("**kwargs"));
+		f2.body = new PyCode.Fragment();
+
+		var call = new PyCode.FunctionCall(new PyCode.Identifier("method"));
+		call.add_argument(new PyCode.Identifier("self"));
+		call.add_argument(new PyCode.Identifier("*args"));
+		call.add_argument(new PyCode.Identifier("**kwargs"));
+
+		f2.body.append(new PyCode.ReturnStatement(call));
 
 		var instmeth = new PyCode.Function("instancemethod");
 		instmeth.add_argument(new PyCode.Identifier("method"));
 		instmeth.body = new PyCode.Fragment();
 		instmeth.body.append(f2);
+		instmeth.body.append(new PyCode.ReturnStatement(new PyCode.Identifier("_")));
 		wrapper_fragment.append(instmeth);
 
 		write_segment(context, source_files, stream);
