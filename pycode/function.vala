@@ -21,14 +21,14 @@ namespace PyCode {
 			bool first = true;
 			foreach (var arg in arguments) {
 				if (!first)
-					writer.write (", ");
+					writer.write_string (", ");
 				else
 					first = false;
 
 				arg.write (writer);
 			}
 			writer.write_string ("):");
-			writer.write_newlinew();
+			writer.write_newline();
 
 			writer.begin_block();
 
