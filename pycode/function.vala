@@ -36,8 +36,10 @@ namespace PyCode {
 				body.write (writer);
 			} else {
 				writer.write_string ("pass");
+				writer.write_newline();
 			}
 
+			writer.write_newline();
 			writer.end_block();
 		}
 	}

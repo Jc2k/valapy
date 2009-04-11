@@ -25,6 +25,17 @@ public class CtypesWriter : CodeVisitor {
 		stream.printf("        return method(self, *args, **kwargs)\n");
 		stream.printf("    return _\n\n");
 
+                var f2 = new PyCode.Function("_");
+		f2.add_argument(new PyCode.Identifier("self"));
+		f2.add_argument(new PyCode.Identifier("*args"));
+		f2.add_argument(new PyCode.Identifier("**kwargs"));
+
+		var instmeth = new PyCode.Function("instancemethod");
+		instmeth.add_argument(new PyCode.Identifier("method"));
+		instmeth.body = new PyCode.Fragment();
+		instmeth.body.append(f2);
+		wrapper_fragment.append(instmeth);
+
 		write_segment(context, source_files, stream);
 	}
 
