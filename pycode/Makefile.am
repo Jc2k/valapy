@@ -11,6 +11,8 @@ libpycode_la_VALASOURCES = \
 	functioncall.vala \
 	identifier.vala \
 	class.vala \
+	list.vala \
+	function.vala \
 	writer.vala \
 	$(NULL)
 

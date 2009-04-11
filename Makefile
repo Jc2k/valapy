@@ -14,6 +14,7 @@ VALA_SOURCES = \
 		pycode/identifier.vala \
 		pycode/class.vala \
 		pycode/list.vala \
+		pycode/function.vala \
 		pycode/writer.vala \
 		$(NULL)
 
