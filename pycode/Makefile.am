@@ -26,9 +26,11 @@ libpycode_la_SOURCES = \
 	$(NULL)
 
 libpycode_la_CFLAGS = \
+	$(VALAPY_CFLAGS) \
 	$(NULL)
 
 libpycode_la_LIBADD = \
+	$(VALAPY_LIBS) \
 	$(NULL)
 
 pycode.stamp: $(libpycode_la_VALA_SOURCES)
