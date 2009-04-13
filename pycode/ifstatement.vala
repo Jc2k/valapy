@@ -19,6 +19,22 @@ namespace PyCode {
 			writer.begin_block ();
 			true_statement.write (writer);
 			writer.end_block ();
+
+			if (false_statement == null)
+				return;
+
+			if (false_statement is IfStatement) {
+				// FIXME: Notify statement its an elseif
+				false_statement.write (writer);
+				return;
+			}
+
+			writer.write_string ("else:");
+			writer.write_newline ();
+
+			writer.begin_block ();
+			false_statement.write (writer);
+			writer.end_block ();
 		}
 	}
 }
