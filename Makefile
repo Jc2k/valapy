@@ -18,6 +18,7 @@ VALA_SOURCES = \
 		pycode/statement.vala \
 		pycode/returnstatement.vala \
 		pycode/ifstatement.vala \
+		pycode/while.vala \
 		pycode/writer.vala \
 		$(NULL)
 
