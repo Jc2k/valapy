@@ -13,6 +13,9 @@ namespace PyCode {
 		}
 
 		public override void write (Writer writer) {
+			if (elif)
+				writer.write_string("el");
+
 			writer.write_string ("if ");
 			condition.write (writer);
 			writer.write_string (":");
