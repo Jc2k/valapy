@@ -24,20 +24,20 @@ public class CtypesWriter : CodeVisitor {
 		f2.add_argument(new PyCode.Identifier("self"));
 		f2.add_argument(new PyCode.Identifier("*args"));
 		f2.add_argument(new PyCode.Identifier("**kwargs"));
-		f2.body = new PyCode.Fragment();
+		f2.body = new PyCode.Block();
 
 		var call = new PyCode.FunctionCall(new PyCode.Identifier("method"));
 		call.add_argument(new PyCode.Identifier("self"));
 		call.add_argument(new PyCode.Identifier("*args"));
 		call.add_argument(new PyCode.Identifier("**kwargs"));
 
-		f2.body.append(new PyCode.ReturnStatement(call));
+		f2.body.add_statement(new PyCode.ReturnStatement(call));
 
 		var instmeth = new PyCode.Function("instancemethod");
 		instmeth.add_argument(new PyCode.Identifier("method"));
-		instmeth.body = new PyCode.Fragment();
-		instmeth.body.append(f2);
-		instmeth.body.append(new PyCode.ReturnStatement(new PyCode.Identifier("_")));
+		instmeth.body = new PyCode.Block();
+		instmeth.body.add_statement(f2);
+		instmeth.body.add_statement(new PyCode.ReturnStatement(new PyCode.Identifier("_")));
 		wrapper_fragment.append(instmeth);
 
 		write_segment(context, source_files, stream);

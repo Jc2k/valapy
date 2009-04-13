@@ -1,9 +1,9 @@
 using Gee;
 
 namespace PyCode {
-	public class Function : Node {
+	public class Function : Statement {
 		public string name { get; set; }
-		public Fragment? body { get; set; default=null; }
+		public Block? body { get; set; default=null; }
 		private Gee.List<Identifier> arguments = new ArrayList<Identifier>();
 
 		public Function (string n) {
@@ -30,17 +30,16 @@ namespace PyCode {
 			writer.write_string ("):");
 			writer.write_newline();
 
-			writer.begin_block();
-
 			if (body != null) {
 				body.write (writer);
 			} else {
+				writer.begin_block ();
 				writer.write_string ("pass");
 				writer.write_newline();
+				writer.end_block ();
 			}
 
 			writer.write_newline();
-			writer.end_block();
 		}
 	}
 }
