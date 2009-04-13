@@ -21,10 +21,9 @@ libpycode_la_VALASOURCES = \
 	$(NULL)
 
 libpycode_la_SOURCES = \
-	$(libpycode_la_VALASOURCES:.vala=.c)
-
-libpycode_la_HEADERS = \
-	$(libpycode_la_VALASOURCES:.vala=.h)
+	$(libpycode_la_VALASOURCES:.vala=.c) \
+	$(libpycode_la_VALASOURCES:.vala=.h) \
+	$(NULL)
 
 libpycode_la_CFLAGS = \
 	$(NULL)
