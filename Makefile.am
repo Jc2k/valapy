@@ -1,2 +1,5 @@
-include pycode/Makefile.am
-include bindgen/Makefile.am
+
+SUBDIRS = \
+	pycode \
+	bindgen \
+	$(NULL)

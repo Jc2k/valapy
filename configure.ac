@@ -15,5 +15,7 @@ AC_SUBST(VALAPY_LIBS)
 
 AC_CONFIG_FILES([
 	Makefile
+	pycode/Makefile
+	bindgen/Makefile
 ])
 AC_OUTPUT

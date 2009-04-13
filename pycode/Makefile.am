@@ -33,10 +33,10 @@ libpycode_la_LIBADD = \
 	$(VALAPY_LIBS) \
 	$(NULL)
 
-pycode.stamp: $(libpycode_la_VALA_SOURCES)
-	valac $(libpycode_la_VALA_SOURCES) --pkg gee-1.0 --library pycode -C
+pycode.stamp: $(libpycode_la_VALASOURCES)
+	valac $(libpycode_la_VALASOURCES) --pkg gee-1.0 --library pycode -C
 
-BUILT_SOURES = \
+BUILT_SOURCES = \
 	pycode.stamp \
 	$(NULL)
 
