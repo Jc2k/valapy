@@ -15,6 +15,7 @@ libpycode_la_VALASOURCES = \
 	function.vala \
 	statement.vala \
 	returnstatement.vala \
+	ifstatement.vala \
 	writer.vala \
 	$(NULL)
 
