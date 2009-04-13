@@ -4,6 +4,8 @@ namespace PyCode {
 		public Statement true_statement { get; set; }
 		public Statement? false_statement { get; set; }
 
+		public bool elif { get; set; }
+
 		public IfStatement (Expression c, Statement t, Statement? f = null) {
 			condition = c;
 			true_statement = t;
@@ -24,8 +26,9 @@ namespace PyCode {
 				return;
 
 			if (false_statement is IfStatement) {
-				// FIXME: Notify statement its an elseif
-				false_statement.write (writer);
+				var elif = false_statement as IfStatement;
+				elif.elif = true;
+				elif.write (writer);
 				return;
 			}
 
