@@ -17,6 +17,6 @@ AC_CONFIG_FILES([
 	Makefile
 	pycode/Makefile
 	bindgen/Makefile
-	tests/Makefile
+	test/Makefile
 ])
 AC_OUTPUT
