@@ -36,6 +36,7 @@ libpycode_la_LIBADD = \
 
 pycode.stamp: $(libpycode_la_VALASOURCES)
 	valac $(libpycode_la_VALASOURCES) --pkg gee-1.0 --library pycode --basedir $(top_srcdir) -C
+	touch pycode.stamp
 
 BUILT_SOURCES = \
 	pycode.stamp \
