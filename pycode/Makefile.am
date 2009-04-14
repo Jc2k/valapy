@@ -27,6 +27,7 @@ libpycode_la_SOURCES = \
 
 libpycode_la_CFLAGS = \
 	$(VALAPY_CFLAGS) \
+	-I$(top_srcdir) \
 	$(NULL)
 
 libpycode_la_LIBADD = \
@@ -34,7 +35,7 @@ libpycode_la_LIBADD = \
 	$(NULL)
 
 pycode.stamp: $(libpycode_la_VALASOURCES)
-	valac $(libpycode_la_VALASOURCES) --pkg gee-1.0 --library pycode -C
+	valac $(libpycode_la_VALASOURCES) --pkg gee-1.0 --library pycode --basedir $(top_srcdir) -C
 
 BUILT_SOURCES = \
 	pycode.stamp \
