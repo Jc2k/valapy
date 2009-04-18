@@ -49,4 +49,8 @@ EXTRA_DIST = \
 	$(libpycode_la_VALASOURCES) \
 	$(NULL)
 
+GITIGNOREFILES = \
+	$(libpycode_la_SOURCES) \
+	$(NULL)
+
 -include $(top_srcdir)/git.mk
