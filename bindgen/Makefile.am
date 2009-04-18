@@ -29,3 +29,5 @@ bg.stamp: $(bg_VALASOURCES)
 	touch bg.stamp
 
 BUILT_SOURCES = bg.stamp
+
+-include $(top_srcdir)/git.mk

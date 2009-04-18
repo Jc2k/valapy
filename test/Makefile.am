@@ -6,3 +6,5 @@ check:	$(BG)
 	./gen-enums > enums.py
 	python pysyncml.py
 
+
+-include $(top_srcdir)/git.mk

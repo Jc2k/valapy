@@ -48,3 +48,5 @@ EXTRA_DIST = \
 	pycode.stamp \
 	$(libpycode_la_VALASOURCES) \
 	$(NULL)
+
+-include $(top_srcdir)/git.mk
