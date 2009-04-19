@@ -16,7 +16,7 @@ bg_SOURCES = \
 
 bg_CFLAGS = \
 	$(VALAPY_CFLAGS) \
-	-I$(top_builddir) \
+	-I$(top_srcdir) \
 	$(NULL)
 
 bg_LDADD = \
