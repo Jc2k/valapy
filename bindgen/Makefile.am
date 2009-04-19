@@ -30,7 +30,7 @@ bg.stamp: $(bg_VALASOURCES)
 
 BUILT_SOURCES = bg.stamp
 
-GITIGNOREFILES = \
+MAINTAINERCLEANFILES = \
 	$(bg_SOURCES) \
 	$(NULL)
 

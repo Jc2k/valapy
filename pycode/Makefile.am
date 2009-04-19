@@ -40,6 +40,9 @@ pycode.stamp: $(libpycode_la_VALASOURCES)
 	valac $(libpycode_la_VALASOURCES) --pkg gee-1.0 --library pycode --basedir $(top_srcdir) -C
 	touch pycode.stamp
 
+vapidir = $(datadir)/vala/vapi
+vapi_DATA = pycode.vapi
+
 BUILT_SOURCES = \
 	pycode.stamp \
 	$(NULL)
@@ -49,8 +52,10 @@ EXTRA_DIST = \
 	$(libpycode_la_VALASOURCES) \
 	$(NULL)
 
-GITIGNOREFILES = \
+MAINTAINERCLEANFILES = \
 	$(libpycode_la_SOURCES) \
+	$(vapi_DATA) \
+	$(srcdir)/pycode.gir \
 	$(NULL)
 
 -include $(top_srcdir)/git.mk
