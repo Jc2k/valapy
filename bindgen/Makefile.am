@@ -32,6 +32,7 @@ BUILT_SOURCES = bg.stamp
 
 EXTRA_DIST = \
 	$(bg_VALASOURCES) \
+	bg.stamp \
 	$(NULL)
 
 MAINTAINERCLEANFILES = \
