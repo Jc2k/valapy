@@ -30,8 +30,12 @@ bg.stamp: $(bg_VALASOURCES)
 
 BUILT_SOURCES = bg.stamp
 
+EXTRA_DIST = \
+	$(bg_VALASOURCES) \
+	$(NULL)
+
 MAINTAINERCLEANFILES = \
-	$(bg_SOURCES) \
+	$(bg_SOURCES) \ 
 	$(NULL)
 
 -include $(top_srcdir)/git.mk
